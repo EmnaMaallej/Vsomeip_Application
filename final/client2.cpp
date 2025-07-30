@@ -11,7 +11,7 @@ void handle_speed_request(const std::shared_ptr<vsomeip::message>& request) {
     std::cout << "[Client2] Received speed request from Client1." << std::endl;
     
     // For example, let’s say Client2 always responds with rpm = 2500.
-    int rpm = 2500;
+    int rpm = 5000;
     
     // Prepare a byte vector with the integer.
     std::vector<vsomeip::byte_t> payload_data(sizeof(int));
