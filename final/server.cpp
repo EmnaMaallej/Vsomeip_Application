@@ -95,7 +95,11 @@ int main() {
     app->register_message_handler(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE, METHOD_SPEEDVALUE, handle_speed_value_request);
     
     // Register subscription handler for event notifications
-    app->register_subscription_handler(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE, EVENTGROUP_SPEEDALERT, handle_subscription);
+    app->register_subscription_handler(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE, EVENTGROUP_SPEEDALERT,
+        [](vsomeip::service_t service, vsomeip::instance_t instance, vsomeip::eventgroup_t eventgroup,
+           vsomeip::client_t client, bool subscribed) {
+            handle_subscription(service, instance, eventgroup, client, subscribed);
+        });
     
     // Offer the speed value service
     app->offer_service(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE);
