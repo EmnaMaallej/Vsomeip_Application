@@ -121,7 +121,9 @@ int main() {
     app->subscribe(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE, EVENTGROUP_SPEEDALERT);
     
     // Start the application event loop in a separate thread
-    std::thread t([&](){ app->start(); });
+    std::thread vsomeip_thread([&](){ 
+    app->start();
+    });
     
     std::this_thread::sleep_for(std::chrono::seconds(3));
     
@@ -141,6 +143,9 @@ int main() {
     
     // Keep the application running
     std::this_thread::sleep_for(std::chrono::seconds(10));
+
+    app->stop();
+    vsomeip_thread.join();
     
     return 0;
 }
