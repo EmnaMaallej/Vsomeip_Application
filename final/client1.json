@@ -1,0 +1,37 @@
+{
+  "unicast": "192.168.0.2",
+  "logging": {
+    "level": "debug"
+  },
+  "applications": [
+    {
+      "name": "client1-app"
+    }
+  ],
+  "required-services": [
+    {
+      "service": "0x1234",     
+      "instance": "0x0001"
+    },
+    {
+      "service": "0x4321",     
+      "instance": "0x0001"
+    }
+  ],
+  "eventgroups": [
+    {
+      "service": "0x1234",
+      "instance": "0x0001",
+      "eventgroup": "0x8001",
+      "events": [
+        "0x0004"
+      ]
+    }
+  ],
+  "service-discovery": {
+    "enable": true,
+    "multicast": "224.244.224.245",
+    "port": "30490",
+    "protocol": "udp"
+  }
+}
