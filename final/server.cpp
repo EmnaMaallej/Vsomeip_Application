@@ -4,12 +4,10 @@
 #include <vector>
 #include <chrono>
 #include <thread>
-#include <set>
 #include "vsomeip_ids.hpp"
 
 // Global application pointer for Server
 std::shared_ptr<vsomeip::application> app;
-std::set<vsomeip::client_t> subscribers_;
 
 void handle_speed_value_request(const std::shared_ptr<vsomeip::message>& request) {
     std::cout << "[Server] Received speed value request from Client1." << std::endl;
@@ -69,17 +67,15 @@ void handle_speed_value_request(const std::shared_ptr<vsomeip::message>& request
     }
 }
 
-void handle_subscription(vsomeip::service_t service, vsomeip::instance_t instance,
-                        vsomeip::eventgroup_t eventgroup, vsomeip::client_t client, bool subscribed) {
+// CORRECTED subscription handler signature
+bool handle_subscription(vsomeip::service_t service, vsomeip::instance_t instance,
+                         vsomeip::eventgroup_t eventgroup, bool subscribed) {
     std::cout << "[Server] Subscription change - Service: 0x" << std::hex << service 
-              << ", Instance: 0x" << instance << ", Client: 0x" << client 
+              << ", Instance: 0x" << instance << ", Eventgroup: 0x" << eventgroup
               << ", Subscribed: " << (subscribed ? "true" : "false") << std::dec << std::endl;
     
-    if (subscribed) {
-        subscribers_.insert(client);
-    } else {
-        subscribers_.erase(client);
-    }
+    // Always accept subscription requests
+    return true;
 }
 
 int main() {
@@ -94,12 +90,8 @@ int main() {
     // Register message handler for speed value service
     app->register_message_handler(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE, METHOD_SPEEDVALUE, handle_speed_value_request);
     
-    // Register subscription handler for event notifications
-    app->register_subscription_handler(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE, EVENTGROUP_SPEEDALERT,
-        [](vsomeip::service_t service, vsomeip::instance_t instance, vsomeip::eventgroup_t eventgroup,
-           vsomeip::client_t client, bool subscribed) {
-            handle_subscription(service, instance, eventgroup, client, subscribed);
-        });
+    // Register subscription handler for event notifications - FIXED SIGNATURE
+    app->register_subscription_handler(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE, EVENTGROUP_SPEEDALERT, handle_subscription);
     
     // Offer the speed value service
     app->offer_service(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE);
