@@ -67,14 +67,22 @@ void handle_speed_value_request(const std::shared_ptr<vsomeip::message>& request
     }
 }
 
-// CORRECTED subscription handler signature
-bool handle_subscription(vsomeip::service_t service, vsomeip::instance_t instance,
-                         vsomeip::eventgroup_t eventgroup, bool subscribed) {
-    std::cout << "[Server] Subscription change - Service: 0x" << std::hex << service 
-              << ", Instance: 0x" << instance << ", Eventgroup: 0x" << eventgroup
-              << ", Subscribed: " << (subscribed ? "true" : "false") << std::dec << std::endl;
+// UPDATED subscription handler with security-aware signature
+bool handle_subscription(vsomeip::service_t service, 
+                         vsomeip::instance_t instance,
+                         vsomeip::eventgroup_t eventgroup,
+                         const vsomeip::event_t event,
+                         const std::function<void(bool)>& _ack) {
+    (void)event;  // Unused parameter
+    
+    std::cout << "[Server] Subscription request received - Service: 0x" << std::hex << service 
+              << ", Instance: 0x" << instance << ", Eventgroup: 0x" << eventgroup << std::dec << std::endl;
     
     // Always accept subscription requests
+    if (_ack) {
+        _ack(true);  // Acknowledge subscription
+    }
+    
     return true;
 }
 
@@ -90,7 +98,7 @@ int main() {
     // Register message handler for speed value service
     app->register_message_handler(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE, METHOD_SPEEDVALUE, handle_speed_value_request);
     
-    // Register subscription handler for event notifications - FIXED SIGNATURE
+    // UPDATED: Register security-aware subscription handler
     app->register_subscription_handler(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE, EVENTGROUP_SPEEDALERT, handle_subscription);
     
     // Offer the speed value service
