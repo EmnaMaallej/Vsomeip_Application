@@ -5,7 +5,7 @@
   },
   "applications": [
     {
-      "name": "server-app"
+      "name": "server"
     }
   ],
   "services": [
