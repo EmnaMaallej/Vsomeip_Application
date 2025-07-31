@@ -5,7 +5,7 @@
   },
   "applications": [
     {
-      "name": "client2-app"
+      "name": "client2"
     }
   ],
   "services": [
