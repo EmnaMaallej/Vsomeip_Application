@@ -5,7 +5,7 @@
   },
   "applications": [
     {
-      "name": "client1-app"
+      "name": "client1"
     }
   ],
   "required-services": [
