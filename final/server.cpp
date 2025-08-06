@@ -12,11 +12,12 @@ std::shared_ptr<vsomeip::application> app;
 void handle_speed_value_request(const std::shared_ptr<vsomeip::message>& request) {
     std::cout << "[Server] Received speed value request from Client1." << std::endl;
     
+    // Extract the converted speed (km/h) from Client1
     auto payload = request->get_payload();
     auto data = payload->get_data();
     size_t len = payload->get_length();
     
-    if (len < sizeof(float)) {
+    if(len < sizeof(float)) {
         std::cerr << "[Server] Received invalid payload for speed value." << std::endl;
         return;
     }
@@ -26,9 +27,11 @@ void handle_speed_value_request(const std::shared_ptr<vsomeip::message>& request
     
     std::cout << "[Server] Received converted speed: " << speed_kmh << " km/h" << std::endl;
     
+    // Send ACK response
     auto response = vsomeip::runtime::get()->create_response(request);
     auto ack_payload = vsomeip::runtime::get()->create_payload();
     
+    // Simple ACK message
     std::string ack_msg = "ACK";
     std::vector<vsomeip::byte_t> ack_data(ack_msg.begin(), ack_msg.end());
     ack_payload->set_data(ack_data);
@@ -37,22 +40,26 @@ void handle_speed_value_request(const std::shared_ptr<vsomeip::message>& request
     app->send(response);
     std::cout << "[Server] Sent ACK response." << std::endl;
     
+    // Analyze speed and send alert notification if needed
     bool send_alert = speed_kmh > 100.0f;
     
     if (send_alert) {
         std::cout << "[Server] Speed > 100 km/h, sending ALERT notification!" << std::endl;
         
+        // Create alert notification
         auto alert_message = vsomeip::runtime::get()->create_notification();
         alert_message->set_service(SERVICE_SPEEDVALUE);
         alert_message->set_instance(INSTANCE_SPEEDVALUE);
         alert_message->set_method(EVENT_SPEEDALERT);
         
+        // Create alert payload
         auto alert_payload = vsomeip::runtime::get()->create_payload();
         std::string alert_data = "SPEED_ALERT";
         std::vector<vsomeip::byte_t> alert_bytes(alert_data.begin(), alert_data.end());
         alert_payload->set_data(alert_bytes);
         alert_message->set_payload(alert_payload);
         
+        // Send notification to all subscribers
         app->notify(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE, EVENT_SPEEDALERT, alert_payload);
         std::cout << "[Server] Alert notification sent to subscribers." << std::endl;
     } else {
@@ -60,19 +67,21 @@ void handle_speed_value_request(const std::shared_ptr<vsomeip::message>& request
     }
 }
 
+// UPDATED subscription handler with security client information
 bool handle_subscription(vsomeip::service_t service, 
                          const vsomeip_sec_client_t *sec_client,
                          const std::string &client_identifier,
                          bool subscribed) {
-    (void)sec_client; // Suppress unused parameter warning
     std::cout << "[Server] Subscription change - Service: 0x" << std::hex << service
               << ", Client ID: " << client_identifier
               << ", Subscribed: " << (subscribed ? "true" : "false") << std::dec << std::endl;
     
+    // Always accept subscription requests
     return true;
 }
 
 int main() {
+    // Create the vsomeip application for Server
     app = vsomeip::runtime::get()->create_application("Server");
     
     if (!app->init()) {
@@ -80,25 +89,24 @@ int main() {
         return -1;
     }
     
-    std::cout << "[Server] Initialized, preparing to offer service..." << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(2)); // Wait for network setup
-    
+    // Register message handler for speed value service
     app->register_message_handler(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE, METHOD_SPEEDVALUE, handle_speed_value_request);
+    
+    // Register UPDATED subscription handler for event notifications
     app->register_subscription_handler(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE, EVENTGROUP_SPEEDALERT, handle_subscription);
     
+    // Offer the speed value service
     app->offer_service(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE);
     
+    // Offer the event
     std::set<vsomeip::eventgroup_t> eventgroups;
     eventgroups.insert(EVENTGROUP_SPEEDALERT);
     app->offer_event(SERVICE_SPEEDVALUE, INSTANCE_SPEEDVALUE, EVENT_SPEEDALERT, eventgroups, vsomeip::event_type_e::ET_EVENT);
     
-    std::cout << "[Server] Service and event offered, starting event loop..." << std::endl;
+    std::cout << "[Server] Server started and offering svc_SpeedValue service." << std::endl;
     
-    std::thread vsomeip_thread([&]() { app->start(); });
-    vsomeip_thread.detach();
+    // Start the event loop (this will block indefinitely)
+    app->start();
     
-    std::this_thread::sleep_for(std::chrono::seconds(30)); // Run for 30 seconds to observe traffic
-    
-    app->stop();
     return 0;
 }
