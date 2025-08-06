@@ -5,7 +5,8 @@
   },
   "applications": [
     {
-      "name": "client2"
+      "name": "client2",
+      "id": "0x1002"
     }
   ],
   "services": [
