@@ -64,6 +64,7 @@ bool handle_subscription(vsomeip::service_t service,
                          const vsomeip_sec_client_t *sec_client,
                          const std::string &client_identifier,
                          bool subscribed) {
+    (void)sec_client; // Suppress unused parameter warning
     std::cout << "[Server] Subscription change - Service: 0x" << std::hex << service
               << ", Client ID: " << client_identifier
               << ", Subscribed: " << (subscribed ? "true" : "false") << std::dec << std::endl;
@@ -75,7 +76,7 @@ int main() {
     app = vsomeip::runtime::get()->create_application("Server");
     
     if (!app->init()) {
-        std::cerr << "[Server] Failed to initialize application. Error: " << app->get_error() << std::endl;
+        std::cerr << "[Server] Failed to initialize application." << std::endl;
         return -1;
     }
     
