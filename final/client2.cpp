@@ -32,7 +32,7 @@ int main() {
     app = vsomeip::runtime::get()->create_application("Client2");
     
     if (!app->init()) {
-        std::cerr << "[Client2] Failed to initialize application. Error: " << app->get_error() << std::endl;
+        std::cerr << "[Client2] Failed to initialize application." << std::endl;
         return -1;
     }
     
@@ -44,7 +44,11 @@ int main() {
     
     std::cout << "[Client2] Service offered, starting event loop..." << std::endl;
     
-    app->start();
+    std::thread vsomeip_thread([&]() { app->start(); });
+    vsomeip_thread.detach();
     
+    std::this_thread::sleep_for(std::chrono::seconds(30)); // Run for 30 seconds to observe traffic
+    
+    app->stop();
     return 0;
 }
