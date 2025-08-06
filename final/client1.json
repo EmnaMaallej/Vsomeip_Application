@@ -1,36 +1,54 @@
 {
-  "unicast": "192.168.0.2",
+  "unicast": "192.168.0.254",
   "logging": {
     "level": "debug"
   },
   "applications": [
     {
-      "name": "client1",
-      "id": "0x1001"
+      "name": "Client1",
+      "id": "0x1111"
     }
   ],
   "services": [
     {
       "service": "0x1234",     
       "instance": "0x0001",
-      "unreliable": "30509"
+      "unreliable": "30509",
+      "methods": [
+        {
+          "method": "0x0001"
+        }
+      ]
     },
     {
-      "service": "0x4321",     
+      "service": "0x5678",
       "instance": "0x0001",
-      "unreliable": "30509"
+      "unreliable": "30509",
+      "methods": [
+        {
+          "method": "0x0002"
+        }
+      ]
     }
   ],
   "eventgroups": [
     {
-      "service": "0x1234",
+      "service": "0x5678",
       "instance": "0x0001",
-      "eventgroup": "0x8001",
+      "eventgroup": "0x0004",
       "events": [
-        "0x0004"
+        "0x0003"
       ]
     }
   ],
+  "network": {
+    "interfaces": [
+      {
+        "name": "client1-veth",
+        "ip": "192.168.0.2"
+      }
+    ]
+  },
   "service-discovery": {
     "enable": "true",
     "multicast": "224.244.224.245",
