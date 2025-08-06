@@ -1,17 +1,17 @@
 {
-  "unicast": "192.168.0.1",
+  "unicast": "192.168.0.254",
   "logging": {
     "level": "debug"
   },
   "applications": [
     {
-      "name": "server",
-      "id": "0x1000"
+      "name": "Server",
+      "id": "0x3333"
     }
   ],
   "services": [
     {
-      "service": "0x1234",
+      "service": "0x5678",
       "instance": "0x0001",
       "unreliable": "30509",
       "methods": [
@@ -21,21 +21,29 @@
       ],
       "events": [
         {
-          "event": "0x0004",
+          "event": "0x0003",
           "is_field": false,
           "is_reliable": true
         }
       ],
       "eventgroups": [
         {
-          "eventgroup": "0x8001",
+          "eventgroup": "0x0004",
           "events": [
-            "0x0004"
+            "0x0003"
           ]
         }
       ]
     }
   ],
+  "network": {
+    "interfaces": [
+      {
+        "name": "server-veth",
+        "ip": "192.168.0.1"
+      }
+    ]
+  },
   "service-discovery": {
     "enable": "true",
     "multicast": "224.244.224.245",
