@@ -78,7 +78,7 @@ int main() {
     app = vsomeip::runtime::get()->create_application("Client1");
     
     if (!app->init()) {
-        std::cerr << "[Client1] Failed to initialize application. Error: " << app->get_error() << std::endl;
+        std::cerr << "[Client1] Failed to initialize application." << std::endl;
         return -1;
     }
     
