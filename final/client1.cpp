@@ -144,8 +144,8 @@ int main() {
     // Keep the application running
     std::this_thread::sleep_for(std::chrono::seconds(10));
 
-    //app->stop();
-    //vsomeip_thread.join();
+    app->stop();
+    vsomeip_thread.join();
     
     return 0;
 }
