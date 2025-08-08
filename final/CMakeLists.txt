@@ -25,22 +25,21 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vsomeip_ids.hpp")
 "#ifndef VSOMEIP_IDS_HPP
 #define VSOMEIP_IDS_HPP
 
-// Service IDs
-#define SERVICE_SPEEDREQUEST 0x4321  // svc_SpeedRequest (Client2 provides)
-#define SERVICE_SPEEDVALUE   0x1234  // svc_SpeedValue (Server provides)
 
-// Instance IDs  
-#define INSTANCE_SPEEDREQUEST 0x0001 // Instance for svc_SpeedRequest
-#define INSTANCE_SPEEDVALUE   0x0001 // Instance for svc_SpeedValue
+#define SERVICE_SPEEDREQUEST 0x4321  
+#define SERVICE_SPEEDVALUE   0x1234  
 
-// Method IDs
-#define METHOD_SPEEDREQUEST 0x0003   // SpeedRequest method (Client2)
-#define METHOD_SPEEDVALUE   0x0002   // speedValue method (Server)
+ 
+#define INSTANCE_SPEEDREQUEST 0x0001 
+#define INSTANCE_SPEEDVALUE   0x0001 
 
-// Event IDs
-#define EVENT_SPEEDALERT    0x0004   // SpeedAlert_Event
 
-// Event Group IDs (for notifications)
+#define METHOD_SPEEDREQUEST 0x0003   
+#define METHOD_SPEEDVALUE   0x0002   
+
+
+#define EVENT_SPEEDALERT    0x0004   
+
 #define EVENTGROUP_SPEEDALERT 0x8001 // SpeedAlert notification group
 
 #endif // VSOMEIP_IDS_HPP
