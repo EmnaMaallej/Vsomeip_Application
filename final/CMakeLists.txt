@@ -55,7 +55,7 @@ target_link_libraries(server
 )
 target_compile_definitions(server PRIVATE ${VSOMEIP_CFLAGS_OTHER})
 
-# Exécutable client1 (updated)
+# Exécutable client1
 add_executable(client1 client1.cpp)
 target_link_libraries(client1 
     ${VSOMEIP_LIBRARIES}
@@ -63,7 +63,7 @@ target_link_libraries(client1
 )
 target_compile_definitions(client1 PRIVATE ${VSOMEIP_CFLAGS_OTHER})
 
-# Exécutable client2 (unchanged)
+# Exécutable client2
 add_executable(client2 client2.cpp)
 target_link_libraries(client2 
     ${VSOMEIP_LIBRARIES}
@@ -77,6 +77,193 @@ target_compile_options(server PRIVATE -Wall -Wextra -g)
 target_compile_options(client1 PRIVATE -Wall -Wextra -g)
 target_compile_options(client2 PRIVATE -Wall -Wextra -g)
 
+# Générer les fichiers de configuration par défaut
+set(CONFIG_DIR ${CMAKE_CURRENT_BINARY_DIR})
+if(NOT EXISTS "${CONFIG_DIR}/server.json")
+    file(WRITE "${CONFIG_DIR}/server.json" 
+"{
+  \"unicast\": \"192.168.0.1\",
+  \"logging\": {
+    \"level\": \"debug\"
+  },
+  \"applications\": [
+    {
+      \"name\": \"Server\",
+      \"id\": \"0x3333\"
+    }
+  ],
+  \"services\": [
+    {
+      \"service\": \"0x5678\",
+      \"instance\": \"0x0001\",
+      \"unreliable\": \"30509\",
+      \"methods\": [
+        {
+          \"method\": \"0x0002\"
+        }
+      ],
+      \"events\": [
+        {
+          \"event\": \"0x0003\",
+          \"is_field\": false,
+          \"is_reliable\": true
+        }
+      ],
+      \"eventgroups\": [
+        {
+          \"eventgroup\": \"0x0004\",
+          \"events\": [
+            \"0x0003\"
+          ]
+        }
+      ]
+    }
+  ],
+  \"network\": {
+    \"interfaces\": [
+      {
+        \"name\": \"server-veth\",
+        \"ip\": \"192.168.0.1\"
+      }
+    ]
+  },
+  \"service-discovery\": {
+    \"enable\": \"true\",
+    \"multicast\": \"224.0.0.1\",
+    \"port\": \"30490\",
+    \"protocol\": \"udp\",
+    \"initial_delay_min\": \"10\",
+    \"initial_delay_max\": \"100\",
+    \"repetitions_base_delay\": \"200\",
+    \"repetitions_max\": \"3\",
+    \"ttl\": \"3\",
+    \"cyclic_offer_delay\": \"2000\",
+    \"request_response_delay\": \"1500\"
+  }
+}")
+endif()
+if(NOT EXISTS "${CONFIG_DIR}/client1.json")
+    file(WRITE "${CONFIG_DIR}/client1.json" 
+"{
+  \"unicast\": \"192.168.0.2\",
+  \"logging\": {
+    \"level\": \"debug\"
+  },
+  \"applications\": [
+    {
+      \"name\": \"Client1\",
+      \"id\": \"0x1111\"
+    }
+  ],
+  \"services\": [
+    {
+      \"service\": \"0x1234\",     
+      \"instance\": \"0x0001\",
+      \"unreliable\": \"30509\",
+      \"methods\": [
+        {
+          \"method\": \"0x0001\"
+        }
+      ]
+    },
+    {
+      \"service\": \"0x5678\",
+      \"instance\": \"0x0001\",
+      \"unreliable\": \"30509\",
+      \"methods\": [
+        {
+          \"method\": \"0x0002\"
+        }
+      ]
+    }
+  ],
+  \"eventgroups\": [
+    {
+      \"service\": \"0x5678\",
+      \"instance\": \"0x0001\",
+      \"eventgroup\": \"0x0004\",
+      \"events\": [
+        \"0x0003\"
+      ]
+    }
+  ],
+  \"network\": {
+    \"interfaces\": [
+      {
+        \"name\": \"client1-veth\",
+        \"ip\": \"192.168.0.2\"
+      }
+    ]
+  },
+  \"service-discovery\": {
+    \"enable\": \"true\",
+    \"multicast\": \"224.0.0.1\",
+    \"port\": \"30490\",
+    \"protocol\": \"udp\",
+    \"initial_delay_min\": \"10\",
+    \"initial_delay_max\": \"100\",
+    \"repetitions_base_delay\": \"200\",
+    \"repetitions_max\": \"3\",
+    \"ttl\": \"3\",
+    \"cyclic_offer_delay\": \"2000\",
+    \"request_response_delay\": \"1500\"
+  }
+}")
+endif()
+if(NOT EXISTS "${CONFIG_DIR}/client2.json")
+    file(WRITE "${CONFIG_DIR}/client2.json" 
+"{
+  \"unicast\": \"192.168.0.3\",
+  \"logging\": {
+    \"level\": \"debug\"
+  },
+  \"applications\": [
+    {
+      \"name\": \"Client2\",
+      \"id\": \"0x2222\"
+    }
+  ],
+  \"services\": [
+    {
+      \"service\": \"0x1234\",
+      \"instance\": \"0x0001\",
+      \"unreliable\": \"30509\",
+      \"methods\": [
+        {
+          \"method\": \"0x0001\"
+        }
+      ]
+    }
+  ],
+  \"network\": {
+    \"interfaces\": [
+      {
+        \"name\": \"client2-veth\",
+        \"ip\": \"192.168.0.3\"
+      }
+    ]
+  },
+  \"service-discovery\": {
+    \"enable\": \"true\",
+    \"multicast\": \"224.0.0.1\",
+    \"port\": \"30490\",
+    \"protocol\": \"udp\",
+    \"initial_delay_min\": \"10\",
+    \"initial_delay_max\": \"100\",
+    \"repetitions_base_delay\": \"200\",
+    \"repetitions_max\": \"3\",
+    \"ttl\": \"3\",
+    \"cyclic_offer_delay\": \"2000\",
+    \"request_response_delay\": \"1500\"
+  }
+}")
+endif()
+
+# Copier les fichiers de configuration dans le répertoire de build
+configure_file(${CONFIG_DIR}/server.json ${CMAKE_CURRENT_BINARY_DIR}/server.json COPYONLY)
+configure_file(${CONFIG_DIR}/client1.json ${CMAKE_CURRENT_BINARY_DIR}/client1.json COPYONLY)
+configure_file(${CONFIG_DIR}/client2.json ${CMAKE_CURRENT_BINARY_DIR}/client2.json COPYONLY)
+
 # Installation
 install(TARGETS server client1 client2 DESTINATION bin)
-install(FILES server.json client1.json client2.json DESTINATION etc/speed/final/build)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/server.json ${CMAKE_CURRENT_BINARY_DIR}/client1.json ${CMAKE_CURRENT_BINARY_DIR}/client2.json DESTINATION /speed/final/build)
