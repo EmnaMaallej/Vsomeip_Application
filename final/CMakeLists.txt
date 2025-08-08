@@ -20,13 +20,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/final
 )
 
-# Define source files
-set(SOURCES
-    final/client1.cpp
-    final/client2.cpp
-    final/server.cpp
-)
-
 # Define executables
 add_executable(client1 final/client1.cpp)
 add_executable(client2 final/client2.cpp)
@@ -56,9 +49,9 @@ target_link_libraries(server
 
 # Set vSOME/IP configuration file paths
 set(VSOMEIP_CONFIG_FILES
-    "${CMAKE_SOURCE_DIR}/client1.json"
-    "${CMAKE_SOURCE_DIR}/client2.json"
-    "${CMAKE_SOURCE_DIR}/server.json"
+    "${CMAKE_SOURCE_DIR}/final/client1.json"
+    "${CMAKE_SOURCE_DIR}/final/client2.json"
+    "${CMAKE_SOURCE_DIR}/final/server.json"
 )
 
 # Copy configuration files to build directory
