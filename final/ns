@@ -62,3 +62,9 @@ echo 1 | sudo tee /sys/class/net/br0/bridge/multicast_querier
 echo 1 | sudo tee /sys/class/net/br0/bridge/multicast_snooping
 sudo sysctl -w net.ipv4.ip_forward=1
 
+SERVER_BIN="/usr/local/bin/server"
+SERVER_CONFIG="/usr/local/etc/vsomeip/server.json"
+CLIENT1_BIN="/usr/local/bin/client1"
+CLIENT1_CONFIG="/usr/local/etc/vsomeip/client1.json"
+CLIENT2_BIN="/usr/local/bin/client2"
+CLIENT2_CONFIG="/usr/local/etc/vsomeip/client2.json"
