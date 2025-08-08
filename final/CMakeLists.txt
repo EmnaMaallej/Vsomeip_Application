@@ -56,9 +56,9 @@ target_link_libraries(server
 
 # Set vSOME/IP configuration file paths
 set(VSOMEIP_CONFIG_FILES
-    "${CMAKE_SOURCE_DIR}/final/client1.json"
-    "${CMAKE_SOURCE_DIR}/final/client2.json"
-    "${CMAKE_SOURCE_DIR}/final/server.json"
+    "${CMAKE_SOURCE_DIR}/client1.json"
+    "${CMAKE_SOURCE_DIR}/client2.json"
+    "${CMAKE_SOURCE_DIR}/server.json"
 )
 
 # Copy configuration files to build directory
