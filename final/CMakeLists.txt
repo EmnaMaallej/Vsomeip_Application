@@ -79,4 +79,4 @@ target_compile_options(client2 PRIVATE -Wall -Wextra -g)
 
 # Installation
 install(TARGETS server client1 client2 DESTINATION bin)
-install(FILES server.json client1.json client2.json DESTINATION etc/vsomeip)
+install(FILES server.json client1.json client2.json DESTINATION etc/speed/final/build)
