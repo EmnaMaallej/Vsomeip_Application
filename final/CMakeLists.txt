@@ -1,25 +1,34 @@
+# Minimum CMake version required
 cmake_minimum_required(VERSION 3.10)
-project(VSomeIPSpeedProject)
 
-# Définir la version C++
+# Project name
+project(VSomeIPSpeedProject LANGUAGES CXX)
+
+# Define C++ standard
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Trouver les packages requis
+# Find required packages
 find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
+find_package(vsomeip3 3.1.20 REQUIRED) # Specify minimum vsomeip3 version
 
-# Trouver vsomeip
-pkg_check_modules(VSOMEIP REQUIRED vsomeip3)
+# Find vsomeip using pkg-config
+pkg_check_modules(VSOMEIP REQUIRED vsomeip3>=3.1.20)
 
-# Ajouter les chemins d'include
+# Include directories
 include_directories(${VSOMEIP_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-# Définir les flags de compilation
+# Compiler flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VSOMEIP_CFLAGS_OTHER}")
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
-# Créer le fichier d'en-tête avec les IDs mis à jour
+# Define configuration directory
+set(CONFIG_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
+# Create vsomeip_ids.hpp if it doesn't exist
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vsomeip_ids.hpp")
     file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/vsomeip_ids.hpp" 
 "#ifndef VSOMEIP_IDS_HPP
@@ -29,7 +38,7 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vsomeip_ids.hpp")
 #define SERVICE_SPEEDREQUEST 0x4321  // svc_SpeedRequest (Client2 provides)
 #define SERVICE_SPEEDVALUE   0x1234  // svc_SpeedValue (Server provides)
 
-// Instance IDs  
+// Instance IDs
 #define INSTANCE_SPEEDREQUEST 0x0001 // Instance for svc_SpeedRequest
 #define INSTANCE_SPEEDVALUE   0x0001 // Instance for svc_SpeedValue
 
@@ -47,42 +56,34 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vsomeip_ids.hpp")
 ")
 endif()
 
-# Exécutable server
+# Define executables
 add_executable(server server.cpp)
-target_link_libraries(server 
-    ${VSOMEIP_LIBRARIES}
-    Threads::Threads
-)
-target_compile_definitions(server PRIVATE ${VSOMEIP_CFLAGS_OTHER})
-
-# Exécutable client1
 add_executable(client1 client1.cpp)
-target_link_libraries(client1 
-    ${VSOMEIP_LIBRARIES}
-    Threads::Threads
-)
-target_compile_definitions(client1 PRIVATE ${VSOMEIP_CFLAGS_OTHER})
-
-# Exécutable client2
 add_executable(client2 client2.cpp)
-target_link_libraries(client2 
-    ${VSOMEIP_LIBRARIES}
-    Threads::Threads
-)
-target_compile_definitions(client2 PRIVATE ${VSOMEIP_CFLAGS_OTHER})
 
-# Options de compilation pour debug
-set(CMAKE_BUILD_TYPE Debug)
-target_compile_options(server PRIVATE -Wall -Wextra -g)
-target_compile_options(client1 PRIVATE -Wall -Wextra -g)
-target_compile_options(client2 PRIVATE -Wall -Wextra -g)
+# Link libraries for all executables
+foreach(target server client1 client2)
+    target_link_libraries(${target}
+        ${VSOMEIP_LIBRARIES}
+        Threads::Threads
+    )
+endforeach()
 
-# Générer les fichiers de configuration par défaut
-set(CONFIG_DIR ${CMAKE_CURRENT_BINARY_DIR})
+# Set default build type if not specified
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build: Debug Release" FORCE)
+endif()
+
+# Generate configuration files with customizable IP addresses
+set(SERVER_IP "192.168.0.1" CACHE STRING "Server IP address")
+set(CLIENT1_IP "192.168.0.2" CACHE STRING "Client1 IP address")
+set(CLIENT2_IP "192.168.0.3" CACHE STRING "Client2 IP address")
+set(NETWORK_INTERFACE "eth0" CACHE STRING "Network interface for vSomeIP")
+
 if(NOT EXISTS "${CONFIG_DIR}/server.json")
     file(WRITE "${CONFIG_DIR}/server.json" 
 "{
-  \"unicast\": \"192.168.0.1\",
+  \"unicast\": \"${SERVER_IP}\",
   \"logging\": {
     \"level\": \"debug\"
   },
@@ -94,7 +95,7 @@ if(NOT EXISTS "${CONFIG_DIR}/server.json")
   ],
   \"services\": [
     {
-      \"service\": \"0x5678\",
+      \"service\": \"0x1234\",
       \"instance\": \"0x0001\",
       \"unreliable\": \"30509\",
       \"methods\": [
@@ -104,16 +105,16 @@ if(NOT EXISTS "${CONFIG_DIR}/server.json")
       ],
       \"events\": [
         {
-          \"event\": \"0x0003\",
+          \"event\": \"0x0004\",
           \"is_field\": false,
           \"is_reliable\": true
         }
       ],
       \"eventgroups\": [
         {
-          \"eventgroup\": \"0x0004\",
+          \"eventgroup\": \"0x8001\",
           \"events\": [
-            \"0x0003\"
+            \"0x0004\"
           ]
         }
       ]
@@ -122,13 +123,13 @@ if(NOT EXISTS "${CONFIG_DIR}/server.json")
   \"network\": {
     \"interfaces\": [
       {
-        \"name\": \"server-veth\",
-        \"ip\": \"192.168.0.1\"
+        \"name\": \"${NETWORK_INTERFACE}\",
+        \"ip\": \"${SERVER_IP}\"
       }
     ]
   },
   \"service-discovery\": {
-    \"enable\": \"true\",
+    \"enable\": true,
     \"multicast\": \"224.0.0.1\",
     \"port\": \"30490\",
     \"protocol\": \"udp\",
@@ -142,10 +143,11 @@ if(NOT EXISTS "${CONFIG_DIR}/server.json")
   }
 }")
 endif()
+
 if(NOT EXISTS "${CONFIG_DIR}/client1.json")
     file(WRITE "${CONFIG_DIR}/client1.json" 
 "{
-  \"unicast\": \"192.168.0.2\",
+  \"unicast\": \"${CLIENT1_IP}\",
   \"logging\": {
     \"level\": \"debug\"
   },
@@ -157,17 +159,7 @@ if(NOT EXISTS "${CONFIG_DIR}/client1.json")
   ],
   \"services\": [
     {
-      \"service\": \"0x1234\",     
-      \"instance\": \"0x0001\",
-      \"unreliable\": \"30509\",
-      \"methods\": [
-        {
-          \"method\": \"0x0001\"
-        }
-      ]
-    },
-    {
-      \"service\": \"0x5678\",
+      \"service\": \"0x1234\",
       \"instance\": \"0x0001\",
       \"unreliable\": \"30509\",
       \"methods\": [
@@ -175,28 +167,38 @@ if(NOT EXISTS "${CONFIG_DIR}/client1.json")
           \"method\": \"0x0002\"
         }
       ]
+    },
+    {
+      \"service\": \"0x4321\",
+      \"instance\": \"0x0001\",
+      \"unreliable\": \"30509\",
+      \"methods\": [
+        {
+          \"method\": \"0x0003\"
+        }
+      ]
     }
   ],
   \"eventgroups\": [
     {
-      \"service\": \"0x5678\",
+      \"service\": \"0x1234\",
       \"instance\": \"0x0001\",
-      \"eventgroup\": \"0x0004\",
+      \"eventgroup\": \"0x8001\",
       \"events\": [
-        \"0x0003\"
+        \"0x0004\"
       ]
     }
   ],
   \"network\": {
     \"interfaces\": [
       {
-        \"name\": \"client1-veth\",
-        \"ip\": \"192.168.0.2\"
+        \"name\": \"${NETWORK_INTERFACE}\",
+        \"ip\": \"${CLIENT1_IP}\"
       }
     ]
   },
   \"service-discovery\": {
-    \"enable\": \"true\",
+    \"enable\": true,
     \"multicast\": \"224.0.0.1\",
     \"port\": \"30490\",
     \"protocol\": \"udp\",
@@ -210,10 +212,11 @@ if(NOT EXISTS "${CONFIG_DIR}/client1.json")
   }
 }")
 endif()
+
 if(NOT EXISTS "${CONFIG_DIR}/client2.json")
     file(WRITE "${CONFIG_DIR}/client2.json" 
 "{
-  \"unicast\": \"192.168.0.3\",
+  \"unicast\": \"${CLIENT2_IP}\",
   \"logging\": {
     \"level\": \"debug\"
   },
@@ -225,12 +228,12 @@ if(NOT EXISTS "${CONFIG_DIR}/client2.json")
   ],
   \"services\": [
     {
-      \"service\": \"0x1234\",
+      \"service\": \"0x4321\",
       \"instance\": \"0x0001\",
       \"unreliable\": \"30509\",
       \"methods\": [
         {
-          \"method\": \"0x0001\"
+          \"method\": \"0x0003\"
         }
       ]
     }
@@ -238,13 +241,13 @@ if(NOT EXISTS "${CONFIG_DIR}/client2.json")
   \"network\": {
     \"interfaces\": [
       {
-        \"name\": \"client2-veth\",
-        \"ip\": \"192.168.0.3\"
+        \"name\": \"${NETWORK_INTERFACE}\",
+        \"ip\": \"${CLIENT2_IP}\"
       }
     ]
   },
   \"service-discovery\": {
-    \"enable\": \"true\",
+    \"enable\": true,
     \"multicast\": \"224.0.0.1\",
     \"port\": \"30490\",
     \"protocol\": \"udp\",
@@ -259,11 +262,11 @@ if(NOT EXISTS "${CONFIG_DIR}/client2.json")
 }")
 endif()
 
-# Copier les fichiers de configuration dans le répertoire de build
-configure_file(${CONFIG_DIR}/server.json ${CMAKE_CURRENT_BINARY_DIR}/server.json COPYONLY)
-configure_file(${CONFIG_DIR}/client1.json ${CMAKE_CURRENT_BINARY_DIR}/client1.json COPYONLY)
-configure_file(${CONFIG_DIR}/client2.json ${CMAKE_CURRENT_BINARY_DIR}/client2.json COPYONLY)
-
 # Installation
 install(TARGETS server client1 client2 DESTINATION bin)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/server.json ${CMAKE_CURRENT_BINARY_DIR}/client1.json ${CMAKE_CURRENT_BINARY_DIR}/client2.json DESTINATION /speed/final/build)
+install(FILES 
+    ${CONFIG_DIR}/server.json 
+    ${CONFIG_DIR}/client1.json 
+    ${CONFIG_DIR}/client2.json 
+    DESTINATION config
+)
