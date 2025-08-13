@@ -45,7 +45,6 @@
     ]
   },
   "routing": "NetworkService",
-  "max-payload-size-unreliable":"500000",
   "service-discovery": {
     "enable": "true",
     "multicast": "224.244.224.245",
