@@ -20,7 +20,7 @@ sudo ip netns add client2-ns
 # Create bridge
 sudo ip link add name br0 type bridge
 sudo ip link set br0 up
-sudo ip addr add 192.168.0.254/24 dev br0
+sudo ip addr add 192.168.0.254/24 dev br0  # Host-side bridge IP
 
 # Create veth pairs for each namespace
 sudo ip link add server-veth type veth peer name server-br
@@ -46,29 +46,39 @@ sudo ip link set client2-br up
 sudo ip netns exec server-ns ip link set lo up
 sudo ip netns exec server-ns ip addr add 192.168.0.1/24 dev server-veth
 sudo ip netns exec server-ns ip link set server-veth up
-ip addr add 192.168.0.1/24 dev server-br
 
 # Configure CLIENT1 namespace  
 sudo ip netns exec client1-ns ip link set lo up
 sudo ip netns exec client1-ns ip addr add 192.168.0.2/24 dev client1-veth
 sudo ip netns exec client1-ns ip link set client1-veth up
-ip addr add 192.168.0.2/24 dev client1-br
-
 
 # Configure CLIENT2 namespace
 sudo ip netns exec client2-ns ip link set lo up
 sudo ip netns exec client2-ns ip addr add 192.168.0.3/24 dev client2-veth
 sudo ip netns exec client2-ns ip link set client2-veth up
-ip addr add 192.168.0.3/24 dev client2-br
 
+# ================= CRITICAL FIXES =================
 
-# Enable multicast routing between namespaces
+# 1. REMOVED INCORRECT IP ASSIGNMENTS TO BRIDGE PORTS
+#    (server-br, client1-br, client2-br are bridge ports - should NOT have IPs)
+
+# 2. ADD MULTICAST ROUTES TO NAMESPACES
 sudo ip netns exec server-ns ip route add 224.0.0.0/4 dev server-veth
 sudo ip netns exec client1-ns ip route add 224.0.0.0/4 dev client1-veth
 sudo ip netns exec client2-ns ip route add 224.0.0.0/4 dev client2-veth
 
-# Enable multicast on bridge (important for SOME/IP Service Discovery)
-echo 1 | sudo tee /sys/class/net/br0/bridge/multicast_querier
-echo 1 | sudo tee /sys/class/net/br0/bridge/multicast_snooping
+# 3. FIX MULTICAST CONFIGURATION
+#    Disable multicast snooping to ensure bridge forwards all multicast
+echo 0 | sudo tee /sys/devices/virtual/net/br0/bridge/multicast_snooping
+#    Enable multicast querier
+echo 1 | sudo tee /sys/devices/virtual/net/br0/bridge/multicast_querier
+
+# 4. ENABLE IP FORWARDING
 sudo sysctl -w net.ipv4.ip_forward=1
 
+# 5. ADDED IGMP PROXY SUPPORT (critical for multicast routing)
+sudo ip netns exec server-ns sysctl -w net.ipv4.igmp_link_local_mcast_report=1
+sudo ip netns exec client1-ns sysctl -w net.ipv4.igmp_link_local_mcast_report=1
+sudo ip netns exec client2-ns sysctl -w net.ipv4.igmp_link_local_mcast_report=1
+
+echo "Setup complete! Use 'sudo wireshark -i br0' to capture traffic"
