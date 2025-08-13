@@ -46,16 +46,26 @@ sudo ip link set client2-br up
 sudo ip netns exec server-ns ip link set lo up
 sudo ip netns exec server-ns ip addr add 192.168.0.1/24 dev server-veth
 sudo ip netns exec server-ns ip link set server-veth up
+ip addr add 192.168.0.1/24 dev server-br
 
 # Configure CLIENT1 namespace  
 sudo ip netns exec client1-ns ip link set lo up
 sudo ip netns exec client1-ns ip addr add 192.168.0.2/24 dev client1-veth
 sudo ip netns exec client1-ns ip link set client1-veth up
+ip addr add 192.168.0.2/24 dev client1-br
+
 
 # Configure CLIENT2 namespace
 sudo ip netns exec client2-ns ip link set lo up
 sudo ip netns exec client2-ns ip addr add 192.168.0.3/24 dev client2-veth
 sudo ip netns exec client2-ns ip link set client2-veth up
+ip addr add 192.168.0.3/24 dev client2-br
+
+
+# Enable multicast routing between namespaces
+sudo ip netns exec server-ns ip route add 224.0.0.0/4 dev server-veth
+sudo ip netns exec client1-ns ip route add 224.0.0.0/4 dev client1-veth
+sudo ip netns exec client2-ns ip route add 224.0.0.0/4 dev client2-veth
 
 # Enable multicast on bridge (important for SOME/IP Service Discovery)
 echo 1 | sudo tee /sys/class/net/br0/bridge/multicast_querier
