@@ -44,7 +44,7 @@
       }
     ]
   },
-  "routing": true,
+  "routing": "NetworkService",
   "max-payload-size-unreliable":"500000",
   "service-discovery": {
     "enable": "true",
