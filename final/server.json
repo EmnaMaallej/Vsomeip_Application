@@ -13,7 +13,7 @@
     {
       "service": "0x5678",
       "instance": "0x0001",
-      "unreliable": "30509",
+      "unreliable": 30510,
       "methods": [
         {
           "method": "0x0002"
@@ -36,26 +36,19 @@
       ]
     }
   ],
-  "network": {
-    "interfaces": [
-      {
-        "name": "server-veth",
-        "ip": "192.168.0.1"
-      }
-    ]
-  },
+ 
   "routing": "NetworkService",
   "service-discovery": {
     "enable": "true",
     "multicast": "224.244.224.245",
-    "port": "30490",
+    "port": 30490,
     "protocol": "udp",
-    "initial_delay_min": "10",
-    "initial_delay_max": "100",
-    "repetitions_base_delay": "200",
-    "repetitions_max": "3",
-    "ttl": "3",
-    "cyclic_offer_delay": "2000",
-    "request_response_delay": "1500"
+    "initial_delay_min": 10,
+    "initial_delay_max": 100,
+    "repetitions_base_delay": 200,
+    "repetitions_max": 3,
+    "ttl": 3,
+    "cyclic_offer_delay": 2000,
+    "request_response_delay": 1500
   }
 }
