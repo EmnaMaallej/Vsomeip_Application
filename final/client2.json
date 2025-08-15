@@ -21,8 +21,6 @@
       ]
     }
   ],
-  
-  "routing": "NetworkService",
   "service-discovery": {
     "enable": "true",
     "multicast": "224.244.224.245",
