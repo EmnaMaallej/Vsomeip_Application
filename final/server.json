@@ -14,6 +14,7 @@
       "service": "0x5678",
       "instance": "0x0001",
       "unreliable": 30510,
+      "reliable": 30511,
       "methods": [
         {
           "method": "0x0002"
@@ -24,7 +25,7 @@
           "event": "0x0003",
           "is_field": false,
           "is_reliable": true
-        }
+         }
       ],
       "eventgroups": [
         {
@@ -36,8 +37,11 @@
       ]
     }
   ],
+  "routing": {
+    "name": "Server"
+  },
   "service-discovery": {
-    "enable": "true",
+    "enable": true,
     "multicast": "224.244.224.245",
     "port": 30490,
     "protocol": "udp",
