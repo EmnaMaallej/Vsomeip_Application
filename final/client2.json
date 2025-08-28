@@ -21,8 +21,11 @@
       ]
     }
   ],
+  "routing": {
+    "name": "Client2"
+  },
   "service-discovery": {
-    "enable": "true",
+    "enable": true,
     "multicast": "224.244.224.245",
     "port": 30490,
     "protocol": "udp",
