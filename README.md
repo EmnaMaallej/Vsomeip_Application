@@ -30,7 +30,6 @@ make
 ```bash
 sudo ip netns exec server_ns bash
 cd <root directory of Speed_Monitoring>/src/build
-mount -t tmpfs tmpfs /tmp
 VSOMEIP_CONFIGURATION=../../Config/server.json VSOMEIP_APPLICATION_NAME=server ./server
 
 ```
