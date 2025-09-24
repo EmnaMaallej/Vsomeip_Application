@@ -7,7 +7,7 @@ cd <root directory of Speed_Monitoring>
 chmod +x ns
 ./ns
 
-##Configure routes and IP addresses
+### 2.Configure routes and IP addresses
 ```bash
 sudo ip route add 224.0.0.1 dev br0
 sudo ip addr add 192.168.0.1/24 dev server-br
